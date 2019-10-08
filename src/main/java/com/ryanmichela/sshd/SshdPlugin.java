@@ -23,7 +23,6 @@ import java.util.logging.Level;
  */
 public final class SshdPlugin extends Plugin
 {
-
   private SshServer sshd;
   public static SshdPlugin instance;
 

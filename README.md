@@ -1,13 +1,13 @@
-Spigot-SSHD
-===========
+Spigot-SSHD (BungeeCord Edition!)
+=================================
 
 [![Build Status](https://travis-ci.org/Justasic/Spigot-SSHD.svg?branch=master)](https://travis-ci.org/Justasic/Spigot-SSHD)
 [![Release](https://img.shields.io/github/release/Justasic/Spigot-SSHD.svg?label=Release&maxAge=60)](https://github.com/Justasic/Spigot-SSHD/releases/latest)
 [![GitHub license](https://img.shields.io/github/license/Justasic/Spigot-SSHD)](https://github.com/Justasic/Spigot-SSHD/blob/master/LICENSE)
 
-Have you ever wished you could remotely access your server's admin console without having to setup a complex remote access system? Now you can with SSHD.
+**Have you ever wished you could remotely access your server's admin console without having to setup a complex remote access system? Now you can with SSHD.**
 
-SSHD securely exposes your Spigot admin console using the SSH protocol - the same protocol that serves as the secure foundation for nearly all remote server administration.
+SSHD securely exposes your BungeeCord admin console using the SSH protocol - the same protocol that serves as the secure foundation for nearly all remote server administration.
 
 - Compatible with all ssh clients, regardless of operating system.
 - Remotely view your server log in real-time.
@@ -15,7 +15,7 @@ SSHD securely exposes your Spigot admin console using the SSH protocol - the sam
 - Supports multiple concurrent remote connections.
 - Strong identity support using public key authentication.
 - Audit history who is running commands in the console
-- Run Spigot without using screen or tmux (by adding `-noconsole`)
+- Run BungeeCord without using screen or tmux (by adding `-noconsole`)
 - Remotely script your server by issuing one-off console commands with ssh.
 
 ### Why should I use SSHD?
@@ -38,7 +38,7 @@ Screenshots
 Setting Up Public Key Authentication
 ====================================
 
-Setting up public key authentication with SSH requires first generating a public and private key pair and then installing just the public key on your Spigot server. This plugin supports all modern SSH key algoritms as OpenSSH. You can paste as many public keys from the methods below into each user's authorization file if they have multiple private keys. You can read [this guide from ssh.com](https://www.ssh.com/ssh/keygen/) if you want a better explanation on different key files.
+Setting up public key authentication with SSH requires first generating a public and private key pair and then installing just the public key on your BungeeCord server. This plugin supports all modern SSH key algoritms as OpenSSH. You can paste as many public keys from the methods below into each user's authorization file if they have multiple private keys. You can read [this guide from ssh.com](https://www.ssh.com/ssh/keygen/) if you want a better explanation on different key files.
 
 ## Generating New Keys
 
