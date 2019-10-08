@@ -1,6 +1,12 @@
 package com.ryanmichela.sshd.implementations;
 
 import com.ryanmichela.sshd.SshdPlugin;
+import net.md_5.bungee.command.ConsoleCommandSender;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ProxyServer;
+
+/*
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -14,6 +20,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+*/
 
 import com.ryanmichela.sshd.ConsoleShellFactory;
 
@@ -22,118 +29,77 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class SSHDCommandSender implements ConsoleCommandSender, CommandSender {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SSHDConsoleCommandSender implements CommandSender 
+{
+	@Getter
+	private static final SSHDConsoleCommandSender instance = new SSHDConsoleCommandSender();
 
-	private final PermissibleBase perm = new PermissibleBase(this);
-	private final SSHDConversationTracker conversationTracker = new SSHDConversationTracker();
-	// Set by the upstream allocating function
-	public ConsoleShellFactory.ConsoleShell console;
-
+	@Override
 	public void sendMessage(String message) {
-		this.sendRawMessage(message);
+		ProxyServer.getInstance().getLogger().info(message);
 	}
 
-	public void sendRawMessage(String message) 
-	{
-		// What the fuck does this code even do? Are we sending to one client or all of them?
+	public void sendRawMessage(String message) {
+		// What the fuck does this code even do? Are we sending to one client or all of
+		// them?
 		if (this.console.ConsoleReader == null)
 			return;
-		try 
-		{
+		try {
+			ProxyServer.getInstance().getLogger().info(message);
 			this.console.ConsoleReader.println(ChatColor.stripColor(message));
-		} 
-		catch (IOException e) 
-		{
+		} catch (IOException e) {
 			SshdPlugin.instance.getLogger().log(Level.SEVERE, "Error sending message to SSHDCommandSender", e);
 		}
 	}
 
-	public void sendMessage(String[] messages) {
+	@Override
+	public void sendMessages(String... messages) {
 		Arrays.asList(messages).forEach(this::sendMessage);
 	}
 
-	public String getName() {
-		return "SSHD Console";
+	@Override
+	public void sendMessage(BaseComponent... message) {
+		sendMessage(BaseComponent.toLegacyText(message));
 	}
 
-	public boolean isOp() {
+	@Override
+	public void sendMessage(BaseComponent message) {
+		sendMessage(message.toLegacyText());
+	}
+
+	@Override
+	public String getName() {
+		return "CONSOLE";
+	}
+
+	@Override
+	public Collection<String> getGroups() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public void addGroups(String... groups) {
+		throw new UnsupportedOperationException("Console may not have groups");
+	}
+
+	@Override
+	public void removeGroups(String... groups) {
+		throw new UnsupportedOperationException("Console may not have groups");
+	}
+
+	@Override
+	public boolean hasPermission(String permission) {
 		return true;
 	}
 
-	public void setOp(boolean value) {
-		throw new UnsupportedOperationException("Cannot change operator status of server console");
+	@Override
+	public void setPermission(String permission, boolean value) {
+		throw new UnsupportedOperationException("Console has all permissions");
 	}
 
-	public boolean beginConversation(Conversation conversation) {
-		return this.conversationTracker.beginConversation(conversation);
+	@Override
+	public Collection<String> getPermissions() {
+		return Collections.emptySet();
 	}
-
-	public void abandonConversation(Conversation conversation) {
-		this.conversationTracker.abandonConversation(conversation, new ConversationAbandonedEvent(conversation, new ManuallyAbandonedConversationCanceller()));
-	}
-
-	public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
-		this.conversationTracker.abandonConversation(conversation, details);
-	}
-
-	public void acceptConversationInput(String input) {
-		this.conversationTracker.acceptConversationInput(input);
-	}
-
-	public boolean isConversing() {
-		return this.conversationTracker.isConversing();
-	}
-
-	public boolean isPermissionSet(String name) {
-		return this.perm.isPermissionSet(name);
-	}
-
-	public boolean isPermissionSet(Permission perm) {
-		return this.perm.isPermissionSet(perm);
-	}
-
-	public boolean hasPermission(String name) {
-		return this.perm.hasPermission(name);
-	}
-
-	public boolean hasPermission(Permission perm) {
-		return this.perm.hasPermission(perm);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
-		return this.perm.addAttachment(plugin, name, value);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin) {
-		return this.perm.addAttachment(plugin);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
-		return this.perm.addAttachment(plugin, name, value, ticks);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
-		return this.perm.addAttachment(plugin, ticks);
-	}
-
-	public void removeAttachment(PermissionAttachment attachment) {
-		this.perm.removeAttachment(attachment);
-	}
-
-	public void recalculatePermissions() {
-		this.perm.recalculatePermissions();
-	}
-
-	public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-		return this.perm.getEffectivePermissions();
-	}
-
-	public boolean isPlayer() {
-		return false;
-	}
-
-	public Server getServer() {
-		return Bukkit.getServer();
-	}
-
 }

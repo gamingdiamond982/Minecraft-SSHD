@@ -148,14 +148,16 @@ public class ConsoleShellFactory implements ShellFactory {
 							{
 								// NO ECHO NO PREAMBLE AND SHIT
 								String cmd = command.substring("rpc".length() + 1, command.length());
-								Bukkit.dispatchCommand(this.SshdCommandSender, cmd);
+								SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(this.SshdCommandSender, cmd);
+								//Bukkit.dispatchCommand(this.SshdCommandSender, cmd);
 							}
 							else
 							{
 								if (!mkpasswd)
 									SshdPlugin.instance.getLogger().info("<" + this.Username + "> " + command);
 									
-								Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+								SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsoleSender().getInstance(), command);
+								//Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
 							}
 						});
 				}
@@ -190,8 +192,8 @@ public class ConsoleShellFactory implements ShellFactory {
 
 			// Doesn't really guarantee our actual system hostname but
 			// it's better than not having one at all.
-			cr.println("Connected to: " + InetAddress.getLocalHost().getHostName() + " (" + Bukkit.getServer().getName() + ")\r");
-			cr.println(ConsoleLogFormatter.ColorizeString(Bukkit.getServer().getMotd()).replaceAll("\n", "\r\n"));
+			cr.println("Connected to: " + InetAddress.getLocalHost().getHostName() + " (BungeeCord)\r");
+			cr.println(ConsoleLogFormatter.ColorizeString(DO SOMETHING HERE).replaceAll("\n", "\r\n"));
 			cr.println("\r");
 			cr.println("Type 'exit' to exit the shell." + "\r");
 			cr.println("===============================================" + "\r");

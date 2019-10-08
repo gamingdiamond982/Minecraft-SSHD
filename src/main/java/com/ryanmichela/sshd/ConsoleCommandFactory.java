@@ -5,7 +5,7 @@ import org.apache.sshd.server.command.CommandFactory;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
-import org.bukkit.Bukkit;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +55,9 @@ public class ConsoleCommandFactory implements CommandFactory {
             try {
                 SshdPlugin.instance.getLogger()
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                    
+                SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsoleSender().getInstance(), command);
+                //Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
             } catch (Exception e) {
                 SshdPlugin.instance.getLogger().severe("Error processing command from SSH -" + e.getMessage());
             } finally {

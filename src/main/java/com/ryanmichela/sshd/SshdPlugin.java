@@ -4,7 +4,8 @@ import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.config.Configuration;
 
 import com.ryanmichela.sshd.ConsoleShellFactory;
 import com.ryanmichela.sshd.MkpasswdCommand;
@@ -20,8 +21,7 @@ import java.util.logging.Level;
 /**
  * Copyright 2013 Ryan Michela
  */
-public
-class SshdPlugin extends JavaPlugin
+public final class SshdPlugin extends Plugin
 {
 
   private SshServer sshd;
