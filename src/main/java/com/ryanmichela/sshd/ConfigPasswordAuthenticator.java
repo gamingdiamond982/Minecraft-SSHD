@@ -19,8 +19,8 @@ public class ConfigPasswordAuthenticator implements PasswordAuthenticator {
 	public boolean authenticate(String username, String password, ServerSession ss)
 	{
 		// Depending on our hash type, we have to try and figure out what we're doing.
-		String HashType = SshdPlugin.instance.getConfig().getString("PasswordType");
-		String ConfigHash = SshdPlugin.instance.getConfig().getString("Credentials." + username.trim());
+		String HashType = SshdPlugin.instance.configuration.getString("PasswordType");
+		String ConfigHash = SshdPlugin.instance.configuration.getString("Credentials." + username.trim());
 
 		if (ConfigHash == null)
 			SshdPlugin.instance.getLogger().warning("Config has no such user: " + username);
@@ -70,7 +70,7 @@ public class ConfigPasswordAuthenticator implements PasswordAuthenticator {
 		}
 
 		SshdPlugin.instance.getLogger().info("Failed login for " + username + " using " + HashType + "-based password authentication.");
-		Integer tries = SshdPlugin.instance.getConfig().getInt("LoginRetries");
+		Integer tries = SshdPlugin.instance.configuration.getInt("LoginRetries");
 
 		try
 		{

@@ -1,5 +1,6 @@
 package com.ryanmichela.sshd;
 
+import net.md_5.bungee.config.Configuration;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.sshd.common.config.keys.AuthorizedKeyEntry;
 import org.apache.sshd.common.config.keys.PublicKeyEntryResolver;
@@ -20,14 +21,13 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 {
 	private File authorizedKeysDir;
 	private Map<String, Integer> FailCounts = new HashMap<String, Integer>();
-
 	public PublicKeyAuthenticator(File authorizedKeysDir) { this.authorizedKeysDir = authorizedKeysDir; }
 
 	@Override public boolean authenticate(String username, PublicKey key, ServerSession session)
 	{
 		byte[] keyBytes = key.getEncoded();
 		File keyFile 	= new File(authorizedKeysDir, username);
-		Integer tries   = SshdPlugin.instance.getConfig().getInt("LoginRetries");
+		Integer tries   = SshdPlugin.instance.configuration.getInt("LoginRetries");
 
 		if (keyFile.exists())
 		{

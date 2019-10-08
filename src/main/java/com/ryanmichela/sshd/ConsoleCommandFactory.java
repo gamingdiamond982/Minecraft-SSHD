@@ -55,12 +55,19 @@ public class ConsoleCommandFactory implements CommandFactory {
             try {
                 SshdPlugin.instance.getLogger()
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
-                    
-                SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsoleSender().getInstance(), command);
+
+                SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsole(), command);
+
+                // getConsoleSender() doesn't exist in bungee, and is replaced with getConsole() from my understanding.
+                //SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsoleSender().getInstance(), command);
                 //Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-            } catch (Exception e) {
+            } 
+            catch (Exception e)
+            {
                 SshdPlugin.instance.getLogger().severe("Error processing command from SSH -" + e.getMessage());
-            } finally {
+            } 
+            finally
+            {
                 callback.onExit(0);
             }
         }

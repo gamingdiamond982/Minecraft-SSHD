@@ -5,15 +5,18 @@ package com.ryanmichela.sshd;
  */
 
 import jline.console.completer.Completer;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
+
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
-public class ConsoleCommandCompleter implements Completer {
 
+// This class *may* not be needed.
+// If it is needed, the only class that uses it is ConsoleShellFactory on line 96
+public class ConsoleCommandCompleter /*implements Completer*/ {
+
+    /*
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
         Waitable<List<String>> waitable = new Waitable<List<String>>() {
             @Override
@@ -22,7 +25,7 @@ public class ConsoleCommandCompleter implements Completer {
                 return commandMap.tabComplete(Bukkit.getServer().getConsoleSender(), buffer);
             }
         };
-        Bukkit.getScheduler().runTask(SshdPlugin.instance, waitable);
+        SshdPlugin.instance.getProxy().getScheduler().runAsync(SshdPlugin.instance, waitable);
         try {
             List<String> offers = waitable.get();
             if (offers == null) {
@@ -43,5 +46,6 @@ public class ConsoleCommandCompleter implements Completer {
         }
         return cursor;
     }
+     */
 }
 

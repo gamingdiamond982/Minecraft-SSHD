@@ -1,15 +1,67 @@
 package com.ryanmichela.sshd;
 
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.Command;
-import org.bukkit.entity.Player;
-
 import java.util.Arrays;
+
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Command;
 
 import com.ryanmichela.sshd.Cryptography;
 import com.ryanmichela.sshd.SshdPlugin;
 
+public class MkpasswdCommand extends Command
+{
+
+	public MkpasswdCommand()
+	{
+		super("mkpasswd");
+	}
+
+	@Override
+	public void execute(CommandSender sender, String[] args)
+	{
+		ProxiedPlayer player = (ProxiedPlayer) sender;
+
+		String algoritm, password;
+		algoritm = args[0];
+		password = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+		try
+		{
+			// Stupid bukkit, we have to concatenate the arguments together if they're using
+			// spaces in their passwords otherwise it won't be as strong as it should be.
+
+		}
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			// ignore it.
+		}
+
+		// If they're console, allow regardless.
+		try 
+		{
+			if (player.hasPermission("sshd.mkpasswd"))
+			{
+				// Dumb but whatever. Some people are really dense.
+				if (algoritm.equalsIgnoreCase("PLAIN"))
+					sender.sendMessage(password);
+				else if (algoritm.equalsIgnoreCase("pbkdf2"))
+					sender.sendMessage(Cryptography.PBKDF2_HashPassword(password));
+				else if (algoritm.equalsIgnoreCase("bcrypt"))
+					sender.sendMessage(Cryptography.BCrypt_HashPassword(password));
+				else if (algoritm.equalsIgnoreCase("sha256"))
+					sender.sendMessage(Cryptography.SHA256_HashPassword(password));
+			}
+		}
+		catch (Exception e)
+		{
+			// since this is a player, send a failure message
+			sender.sendMessage("An error occured, please check console.");
+			e.printStackTrace();
+		}
+	}
+}
+
+/*
 class MkpasswdCommand implements CommandExecutor
 {
     @Override
@@ -96,4 +148,4 @@ class MkpasswdCommand implements CommandExecutor
 		}
 		return false;
     }
-}
+}*/

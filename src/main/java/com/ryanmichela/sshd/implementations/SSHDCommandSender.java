@@ -1,7 +1,9 @@
 package com.ryanmichela.sshd.implementations;
 
 import com.ryanmichela.sshd.SshdPlugin;
-import net.md_5.bungee.command.ConsoleCommandSender;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -26,14 +28,15 @@ import com.ryanmichela.sshd.ConsoleShellFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class SSHDConsoleCommandSender implements CommandSender 
-{
-	@Getter
-	private static final SSHDConsoleCommandSender instance = new SSHDConsoleCommandSender();
+public final class SSHDCommandSender implements CommandSender {
+	private static final SSHDCommandSender instance = new SSHDCommandSender();
+
+	public ConsoleShellFactory.ConsoleShell console;
 
 	@Override
 	public void sendMessage(String message) {

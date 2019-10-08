@@ -4,7 +4,7 @@ package com.ryanmichela.sshd;
  * Copyright 2013 Ryan Michela
  */
 
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.fusesource.jansi.Ansi;
 
 import java.io.PrintWriter;

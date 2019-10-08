@@ -1,11 +1,15 @@
 package com.ryanmichela.sshd;
 
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.api.config.*;
 
 import com.ryanmichela.sshd.ConsoleShellFactory;
 import com.ryanmichela.sshd.MkpasswdCommand;
@@ -25,10 +29,14 @@ public final class SshdPlugin extends Plugin
 {
   private SshServer sshd;
   public static SshdPlugin instance;
+  private File file;
+  public Configuration configuration;
+
 
 	@Override public void onLoad()
 	{
-		saveDefaultConfig();
+		file = new File(ProxyServer.getInstance().getPluginsFolder()+ "/config.yml");
+
 		File authorizedKeys = new File(getDataFolder(), "authorized_keys");
 		if (!authorizedKeys.exists())
 			authorizedKeys.mkdirs();
@@ -47,10 +55,32 @@ public final class SshdPlugin extends Plugin
 			e.printStackTrace();
 		}
 
+
+		try
+		{
+			if (!file.exists())
+			{
+				file.createNewFile();
+			}
+			configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+
+			// more testing
+			configuration.set("test", "This configuration file works!");
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(configuration,file);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
 		// Don't go any lower than INFO or SSHD will cause a stack overflow exception.
 		// SSHD will log that it wrote bites to the output stream, which writes
 		// bytes to the output stream - ad nauseaum.
 		getLogger().setLevel(Level.INFO);
+
+		// config testing
+		String printout = configuration.getString("test");
+		getLogger().info(printout);
 	}
 
 	@Override public void onEnable()
@@ -58,8 +88,8 @@ public final class SshdPlugin extends Plugin
 		instance = this;
 
 		sshd = SshServer.setUpDefaultServer();
-		sshd.setPort(getConfig().getInt("Port", 1025));
-		String host = getConfig().getString("ListenAddress", "all");
+		sshd.setPort(configuration.getInt("Port", 1025));
+		String host = configuration.getString("ListenAddress", "all");
 		sshd.setHost(host.equals("all") ? null : host);
 
 		File hostKey		= new File(getDataFolder(), "hostkey");
@@ -70,14 +100,15 @@ public final class SshdPlugin extends Plugin
 		sshd.setPasswordAuthenticator(new ConfigPasswordAuthenticator());
 		sshd.setPublickeyAuthenticator(new PublicKeyAuthenticator(authorizedKeys));
 
-		if (getConfig().getBoolean("EnableSFTP"))
+		if (configuration.getBoolean("EnableSFTP"))
 		{
 			sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
 			sshd.setFileSystemFactory(
 				new VirtualFileSystemFactory(FileSystems.getDefault().getPath(getDataFolder().getAbsolutePath()).getParent().getParent()));
 		}
 
-		this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
+		getProxy().getPluginManager().registerCommand(this, new MkpasswdCommand());
+		//this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
 
 		sshd.setCommandFactory(new ConsoleCommandFactory());
 		try
@@ -100,5 +131,13 @@ public final class SshdPlugin extends Plugin
 		{
 			// do nothing
 		}
+	}
+
+	public static SshdPlugin getInstance() {
+		return instance;
+	}
+
+	private static void setInstance(SshdPlugin instance) {
+		SshdPlugin.instance = instance;
 	}
 }
