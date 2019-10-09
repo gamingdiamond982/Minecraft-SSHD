@@ -15,12 +15,13 @@ import java.util.Map;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-public class ConsoleLogFormatter extends Formatter {
-
+public class ConsoleLogFormatter extends Formatter 
+{
     private SimpleDateFormat dateFormat;
     private static final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
 
-    public ConsoleLogFormatter() {
+	public ConsoleLogFormatter() 
+	{
         this.dateFormat = new SimpleDateFormat("HH:mm:ss");
     }
 

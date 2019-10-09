@@ -21,19 +21,21 @@ public class MkpasswdCommand extends Command
 	public void execute(CommandSender sender, String[] args)
 	{
 		ProxiedPlayer player = (ProxiedPlayer) sender;
-
 		String algoritm, password;
-		algoritm = args[0];
-		password = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+
 		try
 		{
 			// Stupid bukkit, we have to concatenate the arguments together if they're using
 			// spaces in their passwords otherwise it won't be as strong as it should be.
-
+			algoritm = args[0];
+			password = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 		}
 		catch (ArrayIndexOutOfBoundsException e)
 		{
 			// ignore it.
+			sender.sendMessage("Invalid Syntax");
+			return;
+			
 		}
 
 		// If they're console, allow regardless.
@@ -50,6 +52,11 @@ public class MkpasswdCommand extends Command
 					sender.sendMessage(Cryptography.BCrypt_HashPassword(password));
 				else if (algoritm.equalsIgnoreCase("sha256"))
 					sender.sendMessage(Cryptography.SHA256_HashPassword(password));
+				else
+				{
+					sender.sendMessage("Invalid Syntax");
+					return;
+				}
 			}
 		}
 		catch (Exception e)

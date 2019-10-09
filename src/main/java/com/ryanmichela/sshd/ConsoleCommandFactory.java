@@ -6,6 +6,9 @@ import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,11 +59,8 @@ public class ConsoleCommandFactory implements CommandFactory {
                 SshdPlugin.instance.getLogger()
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
 
-                SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsole(), command);
-
-                // getConsoleSender() doesn't exist in bungee, and is replaced with getConsole() from my understanding.
-                //SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsoleSender().getInstance(), command);
-                //Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                if (!SshdPlugin.instance.getProxy().getPluginManager().dispatchCommand(SshdPlugin.instance.getProxy().getConsole(), command))
+                    SshdPlugin.instance.getProxy().getConsole().sendMessage(new ComponentBuilder("Command not found").color(ChatColor.RED).create());
             } 
             catch (Exception e)
             {

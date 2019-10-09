@@ -55,7 +55,6 @@ public final class SshdPlugin extends Plugin
 			e.printStackTrace();
 		}
 
-
 		try
 		{
 			if (!file.exists())
@@ -108,7 +107,6 @@ public final class SshdPlugin extends Plugin
 		}
 
 		getProxy().getPluginManager().registerCommand(this, new MkpasswdCommand());
-		//this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
 
 		sshd.setCommandFactory(new ConsoleCommandFactory());
 		try

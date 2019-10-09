@@ -11,6 +11,8 @@ import com.ryanmichela.sshd.implementations.SSHDCommandSender;
 import com.ryanmichela.sshd.ConsoleLogFormatter;
 import jline.console.ConsoleReader;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.sshd.common.Factory;
@@ -51,6 +53,7 @@ public class ConsoleShellFactory implements ShellFactory {
 		private String Username;
 
 		StreamHandlerAppender streamHandlerAppender;
+		StreamHandler streamHandler;
 		public ConsoleReader ConsoleReader;
 		public SSHDCommandSender SshdCommandSender;
 
@@ -95,10 +98,10 @@ public class ConsoleShellFactory implements ShellFactory {
 				this.ConsoleReader.setExpandEvents(true);
 				//this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
 
-				StreamHandler streamHandler = new FlushyStreamHandler(out, new ConsoleLogFormatter(), this.ConsoleReader);
+				streamHandler = new FlushyStreamHandler(out, new ConsoleLogFormatter(), this.ConsoleReader);
 				this.streamHandlerAppender		  = new StreamHandlerAppender(streamHandler);
 
-				((Logger)LogManager.getRootLogger()).addAppender(this.streamHandlerAppender);
+				SshdPlugin.instance.getProxy().getLogger().addHandler(this.streamHandler);
 
 				this.environment = env;
 				this.Username = env.getEnv().get(Environment.ENV_USER);
@@ -109,12 +112,13 @@ public class ConsoleShellFactory implements ShellFactory {
 			}
 			catch (Exception e)
 			{
+				e.printStackTrace();
 				throw new IOException("Error starting shell", e);
 			}
 		}   
 
 		@Override
-		public void destroy(ChannelSession cs) { ((Logger)LogManager.getRootLogger()).removeAppender(this.streamHandlerAppender); }
+		public void destroy(ChannelSession cs) { SshdPlugin.instance.getProxy().getLogger().removeHandler(this.streamHandler); }
 
 		public void run()
 		{
@@ -124,7 +128,7 @@ public class ConsoleShellFactory implements ShellFactory {
 					printPreamble(this.ConsoleReader);
 				while (true)
 				{
-					String command = this.ConsoleReader.readLine("\r>", null);
+					String command = this.ConsoleReader.readLine("\r> ", null);
 					// The user sent CTRL+D to close the shell, terminate the session.
 					if (command == null)
 						break;
@@ -150,22 +154,23 @@ public class ConsoleShellFactory implements ShellFactory {
 							{
 								// NO ECHO NO PREAMBLE AND SHIT
 								String cmd = command.substring("rpc".length() + 1, command.length());
-								instance.getProxy().getPluginManager().dispatchCommand(this.SshdCommandSender, cmd);
-								//Bukkit.dispatchCommand(this.SshdCommandSender, cmd);
+								if (!instance.getProxy().getPluginManager().dispatchCommand(this.SshdCommandSender, cmd))
+									instance.getProxy().getConsole().sendMessage(new ComponentBuilder("Command not found").color(ChatColor.RED).create());
 							}
 							else
 							{
 								if (!mkpasswd)
 									instance.getLogger().info("<" + this.Username + "> " + command);
 
-								instance.getProxy().getPluginManager().dispatchCommand(instance.getProxy().getConsole(), command);
-								//Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+								if (!instance.getProxy().getPluginManager().dispatchCommand(this.SshdCommandSender, command))
+									instance.getProxy().getConsole().sendMessage(new ComponentBuilder("Command not found").color(ChatColor.RED).create());
 							}
 						});
 				}
 			}
 			catch (IOException e)
 			{
+				e.printStackTrace();
 				instance.getLogger().log(Level.SEVERE, "Error processing command from SSH", e);
 			}
 			finally

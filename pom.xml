@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ryanmichela</groupId>
-    <artifactId>sshd</artifactId>
+    <artifactId>sshd-bungee</artifactId>
     <version>1.3.6.1</version>
     <url>https://github.com/Justasic/Bukkit-SSHD/</url>
 
@@ -101,14 +101,12 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.0</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.1</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -117,16 +115,13 @@
             <version>1.10</version>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-bootstrap</artifactId>
-            <version>1.13-SNAPSHOT</version>
-        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
