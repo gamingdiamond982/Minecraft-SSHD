@@ -97,7 +97,7 @@ public class ConsoleLogFormatter extends Formatter
 			stringbuilder.append(stringwriter.toString());
 		}
 
-		return stringbuilder.toString();
+		return stringbuilder.toString().replace("\n", "\r\n");
 	}
 
 	private void colorize(LogRecord logrecord) 

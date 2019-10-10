@@ -23,25 +23,33 @@ public final class SSHDCommandSender implements CommandSender
 	@Override
 	public void sendMessage(String message)
 	{
-		if (message.indexOf('\n') != 0)
-			this.sendRawMessage(message);
-		else
-			Arrays.asList(message.split("\n")).forEach(this::sendMessage);
+		this.sendRawMessage(message + "\r");
 	}
 
 	public void sendRawMessage(String message) 
 	{
 		if (this.console.ConsoleReader == null)
 			return;
-		/*
+		
 		try 
 		{
 			this.console.ConsoleReader.println(ConsoleLogFormatter.ColorizeString(message).replace("\n", "\n\r"));
+			this.console.ConsoleReader.print(this.console.ConsoleReader.RESET_LINE + "");
+            this.console.ConsoleReader.flush();
+            try 
+            {
+                this.console.ConsoleReader.drawLine();
+            }
+             catch (Throwable ex) 
+            {
+                this.console.ConsoleReader.getCursorBuffer().clear();
+            }
+            this.console.ConsoleReader.flush();
 		}
 		catch (IOException e) 
 		{
 			SshdPlugin.instance.getLogger().log(Level.SEVERE, "Error sending message to SSHDCommandSender", e);
-		}*/
+		}
 	}
 
 	@Override

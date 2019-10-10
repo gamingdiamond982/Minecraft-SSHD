@@ -32,10 +32,9 @@ public final class SshdPlugin extends Plugin
   private File file;
   public Configuration configuration;
 
-
 	@Override public void onLoad()
 	{
-		file = new File(ProxyServer.getInstance().getPluginsFolder()+ "/config.yml");
+		file = new File(getDataFolder(), "config.yml");
 
 		File authorizedKeys = new File(getDataFolder(), "authorized_keys");
 		if (!authorizedKeys.exists())
@@ -59,13 +58,11 @@ public final class SshdPlugin extends Plugin
 		{
 			if (!file.exists())
 			{
-				file.createNewFile();
+				// Copy our config file.
+				InputStream link = (getClass().getResourceAsStream("/config.yml"));
+				Files.copy(link, file.getAbsoluteFile().toPath());
 			}
 			configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
-
-			// more testing
-			configuration.set("test", "This configuration file works!");
-			ConfigurationProvider.getProvider(YamlConfiguration.class).save(configuration,file);
 		}
 		catch (IOException e)
 		{
@@ -76,10 +73,6 @@ public final class SshdPlugin extends Plugin
 		// SSHD will log that it wrote bites to the output stream, which writes
 		// bytes to the output stream - ad nauseaum.
 		getLogger().setLevel(Level.INFO);
-
-		// config testing
-		String printout = configuration.getString("test");
-		getLogger().info(printout);
 	}
 
 	@Override public void onEnable()

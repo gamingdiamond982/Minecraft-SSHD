@@ -54,8 +54,10 @@ public class ConsoleCommandFactory implements CommandFactory {
         }
 
         @Override
-        public void start(ChannelSession cs, Environment environment) throws IOException {
-            try {
+        public void start(ChannelSession cs, Environment environment) throws IOException 
+        {
+            try 
+            {
                 SshdPlugin.instance.getLogger()
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
 

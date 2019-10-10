@@ -25,7 +25,7 @@ public class FlushyStreamHandler extends StreamHandler
     @Override
     public synchronized void publish(LogRecord record) 
     {
-        record.setMessage(record.getMessage().replace("\n", "\r\n"));
+        record.setMessage(record.getMessage().replace("\n", "\n\r"));
         super.publish(record);
         flush();
     }
