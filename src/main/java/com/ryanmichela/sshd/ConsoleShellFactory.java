@@ -6,7 +6,6 @@ import com.ryanmichela.sshd.FlushyOutputStream;
 import com.ryanmichela.sshd.FlushyStreamHandler;
 import com.ryanmichela.sshd.SshTerminal;
 import com.ryanmichela.sshd.SshdPlugin;
-import com.ryanmichela.sshd.StreamHandlerAppender;
 import com.ryanmichela.sshd.implementations.SSHDCommandSender;
 import com.ryanmichela.sshd.ConsoleLogFormatter;
 import jline.console.ConsoleReader;
@@ -52,7 +51,6 @@ public class ConsoleShellFactory implements ShellFactory {
 		private Thread thread;
 		private String Username;
 
-		StreamHandlerAppender streamHandlerAppender;
 		StreamHandler streamHandler;
 		public ConsoleReader ConsoleReader;
 		public SSHDCommandSender SshdCommandSender;
@@ -96,10 +94,9 @@ public class ConsoleShellFactory implements ShellFactory {
 			{
 				this.ConsoleReader = new ConsoleReader(in, new FlushyOutputStream(out), new SshTerminal());
 				this.ConsoleReader.setExpandEvents(true);
-				//this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
+				this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
 
 				streamHandler = new FlushyStreamHandler(out, new ConsoleLogFormatter(), this.ConsoleReader);
-				this.streamHandlerAppender		  = new StreamHandlerAppender(streamHandler);
 
 				SshdPlugin.instance.getProxy().getLogger().addHandler(this.streamHandler);
 
