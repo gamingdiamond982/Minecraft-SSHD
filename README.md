@@ -1,4 +1,4 @@
-Minecraft-SSHD
+Minecraft-SSHD (Sponge Edition!)
 ===========
 
 [![Build Status](https://travis-ci.org/Justasic/Minecraft-SSHD.svg?branch=master)](https://travis-ci.org/Justasic/Minecraft-SSHD)
@@ -9,7 +9,7 @@ Minecraft-SSHD
 
 **Have you ever wished you could remotely access your server's admin console without having to setup a complex remote access system? Now you can with Minecraft-SSHD!**
 
-Minecraft-SSHD securely exposes your BungeeCord admin console and the server filesystem using the SSH protocol - the same protocol that serves as the secure foundation for nearly all remote server administration.<br/>
+Minecraft-SSHD securely exposes your Sponge admin console and the server filesystem using the SSH protocol - the same protocol that serves as the secure foundation for nearly all remote server administration.<br/>
 
 - Compatible with all ssh clients, regardless of operating system.
 - Remotely view your server log in real-time.
@@ -22,7 +22,7 @@ Minecraft-SSHD securely exposes your BungeeCord admin console and the server fil
 
 ### Why should I use Minecraft-SSHD?
 
-- You are in a shared hosting environment that only gives you access to the - log files.
+- You are in a shared hosting environment that only gives you access to the log files.
 - You want to share access to your server console, but don't want to give anybody access to the machine its running on.
 - You always wanted to use RCON, but want to see the server log as well.
 - You are tired of running your server in a GNU screen or tmux session.
