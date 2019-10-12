@@ -3,6 +3,8 @@ package com.ryanmichela.sshd;
 import com.ryanmichela.sshd.utils.Config;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.logging.Level;
 
@@ -27,7 +30,13 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.text.Text;
 
-@Plugin(id = "spongesshd", name = "Sponge-SSHD", version = "1.3.7", description = "Sponge port for Minecraft-SSHD. SSH for your minecraft server!")
+@Plugin(
+	id = "sshd", 
+	name = "Minecraft-SSHD", 
+	version = "1.3.7", 
+	description = "Sponge port for Minecraft-SSHD. SSH for your minecraft server!", 
+	authors={"Justin Crawford", "Zachery Coleman"}
+)
 public class SshdPlugin
 {
     String ListenAddress = "";
@@ -38,31 +47,29 @@ public class SshdPlugin
     String PasswordType = "";
     // Credentials
 
-    private File modConfigFolder;
-    CommandSpec MkpasswdCommand = CommandSpec.builder()
-            .description(Text.of("Make a SSHD password hash"))
-            .permission("sshd.mkpasswd")
-            .build();
-
-    public File getDataFolder()
-    {
-        return modConfigFolder;
-    }
-
     private SshServer sshd;
-	public static SshdPlugin instance;
+	private static SshdPlugin instance;
 
 	@Inject
-	public Logger logger;
+	public static Logger logger;
+
+	@Inject
+    @DefaultConfig(sharedRoot = false)
+	public Path DefaultConfig;
+	
+	@Inject
+	@ConfigDir(sharedRoot = false)
+	public Path ConfigDir;
 
 	public Config config;
+
 	@Listener
 	public void onServerStart(GameStartedServerEvent event)
 	{
         instance = this;
         // Parse our config
         config = new Config();
-        config.setup();
+		config.setup();
 
         // Now include it in our dealio here
         this.Mode = config.configNode.getNode("Mode").getString();
@@ -70,33 +77,43 @@ public class SshdPlugin
         this.ListenAddress = config.configNode.getNode("ListenAddress").getString();
         this.Port = config.configNode.getNode("Port").getInt();
         this.LoginRetries = config.configNode.getNode("LoginRetries").getInt();
-        this.EnableSFTP = config.configNode.getNode("EnableSFTP").getBoolean();
+		this.EnableSFTP = config.configNode.getNode("EnableSFTP").getBoolean();
+
+		try
+		{
+			File motd = new File(this.ConfigDir.toFile(), "motd.txt");
+			if (!motd.exists())
+			{
+				InputStream link = (getClass().getResourceAsStream("/motd.txt"));
+				Files.copy(link, motd.getAbsoluteFile().toPath());
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 
 
 		sshd = SshServer.setUpDefaultServer();
 		sshd.setPort(this.Port);
-		String host = this.ListenAddress;
-		sshd.setHost(host.equals("all") ? null : host);
+		sshd.setHost(this.ListenAddress.equals("all") ? null : this.ListenAddress);
 
-		File hostKey = new File(getDataFolder(), "hostkey");
-		File authorizedKeys = new File(getDataFolder(), "authorized_keys");
+		File hostKey = new File(this.ConfigDir.toFile(), "hostkey");
+		File authorizedKeys = new File(this.ConfigDir.toFile(), "authorized_keys");
 
 		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(hostKey.toPath()));
 		sshd.setShellFactory(new ConsoleShellFactory());
 		sshd.setPasswordAuthenticator(new ConfigPasswordAuthenticator());
 		sshd.setPublickeyAuthenticator(new PublicKeyAuthenticator(authorizedKeys));
 
-
-
 		if (this.EnableSFTP)
 		{
 			sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
 			sshd.setFileSystemFactory(
-			        new VirtualFileSystemFactory(FileSystems.getDefault().getPath(getDataFolder().getAbsolutePath()).getParent().getParent()));
+			        new VirtualFileSystemFactory(this.ConfigDir.getParent().getParent()));
 		}
 
-        Sponge.getCommandManager().register(instance, MkpasswdCommand, "mkpasswd");
-		//this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
+		MkpasswdCommand.BuildCommand();
 
 		sshd.setCommandFactory(new ConsoleCommandFactory());
 		try
@@ -105,13 +122,18 @@ public class SshdPlugin
 		}
 		catch (IOException e)
 		{
-			getLogger().error("Failed to start SSH server! ", e);
+			logger.error("Failed to start SSH server! ", e);
 		}
 
-		logger.info("Successfully running ExamplePlugin!!!");
+		logger.info("Loaded Minecraft-SSHD.");
 	}
 
-	public Logger getLogger()
+	public static SshdPlugin GetInstance()
+	{
+		return instance;
+	}
+
+	public static Logger GetLogger()
 	{
 		return logger;
 	}

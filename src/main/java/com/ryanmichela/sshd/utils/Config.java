@@ -17,21 +17,20 @@ public class Config
 {
 	// Give us a config!
 	@Inject
-	@DefaultConfig(sharedRoot = true)
+	@DefaultConfig(sharedRoot = false)
 	// idk what to do with this one.
-	private ConfigurationLoader<CommentedConfigurationNode> configLoader = HoconConfigurationLoader.builder().setPath(SshdPlugin.instance.defaultConfig).build();
+	private ConfigurationLoader<CommentedConfigurationNode> configLoader = HoconConfigurationLoader.builder().setPath(SshdPlugin.GetInstance().DefaultConfig).build();
 
 	public CommentedConfigurationNode configNode;
-
 
 	public void setup()
 	{
 		// I'm not sure if this will even work, the sponge config API is confusing.
-		if (!Files.exists((Path) SshdPlugin.instance.config.configLoader.getDefaultOptions()))
+		if (!Files.exists(SshdPlugin.GetInstance().DefaultConfig))
 		{
 			try
 			{
-				Files.createFile((Path) SshdPlugin.instance.config.configLoader.getDefaultOptions());
+				Files.createFile(SshdPlugin.GetInstance().DefaultConfig);
 				this.load();
 				this.populate();
 				this.save();
@@ -102,6 +101,10 @@ public class Config
 				"# You can use the console/in-game command `/mkpasswd [hash] PASSWORD` to\n" +
 				"# generate a password hash string then copy it for your passwords below.\n" +
 				"# You can also use `/mkpasswd help` to see what algorithms are supported.");
+
+		this.configNode.getNode("Credentials").setComment("# Associate each username with a password hash (or the password if the PasswordType is set to PLAIN)");
+		this.configNode.getNode("Credentials", "user1", "password").setValue("MySecretPassword");
+		this.configNode.getNode("Credentials", "user2", "password").setValue("MyBestFriendsPassword");
 		//this.configNode.getNode("").setValue("").setComment("");
 
 

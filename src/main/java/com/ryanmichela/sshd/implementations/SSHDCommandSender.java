@@ -3,21 +3,39 @@ package com.ryanmichela.sshd.implementations;
 import com.ryanmichela.sshd.SshdPlugin;
 import com.ryanmichela.sshd.ConsoleShellFactory;
 import com.ryanmichela.sshd.ConsoleLogFormatter;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageChannel;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.SubjectReference;
+import org.spongepowered.api.service.context.Context;
+import org.spongepowered.api.util.Tristate;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.Optional;
+import java.util.List;
 
 // This is gonna be a mess.
-public class SSHDCommandSender implements ConsoleCommandSender, CommandSource
+public class SSHDCommandSender implements ConsoleSource
 {
-	private final PermissibleBase perm = new PermissibleBase(this);
-	private final SSHDConversationTracker conversationTracker = new SSHDConversationTracker();
+	private MessageChannel mc = MessageChannel.TO_CONSOLE;
+	private Subject subjectDelegate;
 	// Set by the upstream allocating function
 	public ConsoleShellFactory.ConsoleShell console;
 
+	// This is an override for Sponge to work with the SSH consoles.
+	public void sendMessage(Text message)
+	{
+		this.sendRawMessage(message.toPlain() + "\r");
+	}
+
+	// Back port from Spigot/BungeeCord-style API calls.
 	public void sendMessage(String message) 
 	{
 		this.sendRawMessage(message + "\r");
@@ -45,96 +63,98 @@ public class SSHDCommandSender implements ConsoleCommandSender, CommandSource
 		} 
 		catch (IOException e) 
 		{
-			SshdPlugin.instance.getLogger().log(Level.SEVERE, "Error sending message to SSHDCommandSender", e);
+			SshdPlugin.GetLogger().error("Error sending message to SSHDCommandSender", e);
 		}
 	}
 
-	public void sendMessage(String[] messages) {
+	public void sendMessage(String[] messages) 
+	{
 		Arrays.asList(messages).forEach(this::sendMessage);
+	}
+
+	public MessageChannel getMessageChannel()
+	{
+		return mc;
+	}
+
+	public void setMessageChannel(MessageChannel channel)
+	{
+		mc = channel;
 	}
 
 	public String getName() {
 		return "SSHD Console";
 	}
 
-	public boolean isOp() {
-		return true;
-	}
-
-	public void setOp(boolean value) {
-		throw new UnsupportedOperationException("Cannot change operator status of server console");
-	}
-
-	public boolean beginConversation(Conversation conversation) {
-		return this.conversationTracker.beginConversation(conversation);
-	}
-
-	public void abandonConversation(Conversation conversation) {
-		this.conversationTracker.abandonConversation(conversation, new ConversationAbandonedEvent(conversation, new ManuallyAbandonedConversationCanceller()));
-	}
-
-	public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
-		this.conversationTracker.abandonConversation(conversation, details);
-	}
-
-	public void acceptConversationInput(String input) {
-		this.conversationTracker.acceptConversationInput(input);
-	}
-
-	public boolean isConversing() {
-		return this.conversationTracker.isConversing();
-	}
-
-	public boolean isPermissionSet(String name) {
-		return this.perm.isPermissionSet(name);
-	}
-
-	public boolean isPermissionSet(Permission perm) {
-		return this.perm.isPermissionSet(perm);
-	}
-
-	public boolean hasPermission(String name) {
-		return this.perm.hasPermission(name);
-	}
-
-	public boolean hasPermission(Permission perm) {
-		return this.perm.hasPermission(perm);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
-		return this.perm.addAttachment(plugin, name, value);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin) {
-		return this.perm.addAttachment(plugin);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
-		return this.perm.addAttachment(plugin, name, value, ticks);
-	}
-
-	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
-		return this.perm.addAttachment(plugin, ticks);
-	}
-
-	public void removeAttachment(PermissionAttachment attachment) {
-		this.perm.removeAttachment(attachment);
-	}
-
-	public void recalculatePermissions() {
-		this.perm.recalculatePermissions();
-	}
-
-	public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-		return this.perm.getEffectivePermissions();
-	}
-
-	public boolean isPlayer() {
-		return false;
-	}
-
-	public Server getServer() {
-		return Bukkit.getServer();
-	}
-
+@Override
+		public String getIdentifier() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public Set<Context> getActiveContexts() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public boolean isSubjectDataPersisted() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	
+		@Override
+		public boolean isChildOf(Set<Context> contexts, SubjectReference parent) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	
+		@Override
+		public SubjectData getTransientSubjectData() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public SubjectData getSubjectData() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public Tristate getPermissionValue(Set<Context> contexts, String permission) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public List<SubjectReference> getParents(Set<Context> contexts) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public Optional<String> getOption(Set<Context> contexts, String key) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public SubjectCollection getContainingCollection() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public Optional<CommandSource> getCommandSource() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	
+		@Override
+		public SubjectReference asSubjectReference() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 }

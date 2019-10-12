@@ -10,99 +10,123 @@ import java.util.Arrays;
 
 import com.ryanmichela.sshd.Cryptography;
 import com.ryanmichela.sshd.SshdPlugin;
+
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.command.TabCompleteEvent;
 import org.spongepowered.api.text.Text;
 
-class MkpasswdCommand implements CommandExecutor
+public class MkpasswdCommand implements CommandExecutor
 {
-	// Because Spigot's failed syntax API is really less than ideal (you should be required to add a
-	// SendSyntax function override), we're just always going to return true even for syntax failures
-	// as we will handle the syntax message internally. This also lets us send the messages more
-	// securely to the client without people knowing we're using the command. This prevents password
-	// or hash leakages from the user to other connected users. Plus this syntax will show how
-	// to both use the command and what hashes we support which is important for people who don't
-	// know how to RTFM. - Justin
-	private void SendSyntax(CommandSource sender, boolean invalid)
+	private static CommandSpec cmdspec;
+	public static void BuildCommand()
 	{
-		if (invalid)
-		// So, to send a message in sponge, you must use "Text.of()" for some reason.
-		sender.sendMessage(Text.of("\u00A7cInvalid Syntax\u00A7r"));
-		sender.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
-		sender.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
-	}
+		CommandSpec pbkdf2 = CommandSpec.builder()
+										.description(Text.of("PBKDF2 hashed password"))
+										.permission("sshd.mkpasswd.pbkdf2")
+										.arguments(GenericArguments.remainingJoinedStrings(Text.of("password")))
+										.executor((CommandSource source, CommandContext args) -> {
+											try
+											{
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.PBKDF2_HashPassword(args.<String>getOne("message").get())));
+											}
+											catch (Exception e)
+											{
+												e.printStackTrace();
+												return null;
+											}
+											return CommandResult.success();
+										})
+										.build();
 
-	public boolean onCommand(CommandSource sender, TabCompleteEvent.Command command, String label, String[] args)
-	{
-		// If we're not mkpasswd, just fuck off.
-		if (!label.equalsIgnoreCase("mkpasswd"))
-			return false;
+		CommandSpec bcrypt = CommandSpec.builder()
+										.description(Text.of("BCrypt hashed password"))
+										.permission("sshd.mkpasswd.bcrypt")
+										.arguments(GenericArguments.remainingJoinedStrings(Text.of("password")))
+										.executor((CommandSource source, CommandContext args) -> {
+											try
+											{
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.BCrypt_HashPassword(args.<String>getOne("message").get())));
+											}
+											catch (Exception e)
+											{
+												e.printStackTrace();
+												return null;
+											}
+											return CommandResult.success();
+										})
+										.build();
 
-		String algoritm, password;
-		try
-		{
-			// Stupid bukkit, we have to concatenate the arguments together if they're using
-			// spaces in their passwords otherwise it won't be as strong as it should be.
-			algoritm = args[0];
-			password = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-			if (password.trim().isEmpty()) // Shortcut to the catch statement below.
-				throw new ArrayIndexOutOfBoundsException();
-		}
-		catch (ArrayIndexOutOfBoundsException e)
-		{
-			// ignore it.
-			this.SendSyntax(sender, true);
-			return true;
-		}
+		CommandSpec sha256 = CommandSpec.builder()
+										.description(Text.of("SHA256 hashed password"))
+										.permission("sshd.mkpasswd.sha256")
+										.arguments(GenericArguments.remainingJoinedStrings(Text.of("password")))
+										.executor((CommandSource source, CommandContext args) -> {
+											try
+											{
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.SHA256_HashPassword(args.<String>getOne("message").get())));
+											}
+											catch (Exception e)
+											{
+												e.printStackTrace();
+												return null;
+											}
+											return CommandResult.success();
+										})
+										.build();
 
-		boolean hasperm = (!(sender instanceof Player)) || ((Player) sender).hasPermission("sshd.mkpasswd");
+		// The plain text encryption method
+		CommandSpec plain = CommandSpec.builder()
+										.description(Text.of("Plain text password (insecure)"))
+										.permission("sshd.mkpasswd.plain")
+										.executor((CommandSource source, CommandContext args) -> {
+											source.sendMessage(Text.of("Bro... It's literally your unhashed password."));
+											return CommandResult.success();
+										})
+										.build();
 
-		if (hasperm)
-		{ 
-			try
-			{
-				String hash = "";
-				// Dumb but whatever. Some people are really dense.
-				if (algoritm.equalsIgnoreCase("PLAIN"))
-				{
-					// I mean c'mon...
-					sender.sendMessage(Text.of("Bro really? it's literally your unencrypted password..."));
-					return true;
-				}
-				else if (algoritm.equalsIgnoreCase("pbkdf2"))
-					hash = Cryptography.PBKDF2_HashPassword(password);
-				else if (algoritm.equalsIgnoreCase("bcrypt"))
-					hash = Cryptography.BCrypt_HashPassword(password);
-				else if (algoritm.equalsIgnoreCase("sha256"))
-					hash = Cryptography.SHA256_HashPassword(password);
-				else
-				{
-					this.SendSyntax(sender, !algoritm.equalsIgnoreCase("help"));
-					return true;
-				}
+		// The "help" command to show syntax usage
+		CommandSpec helpcmd = CommandSpec.builder()
+									 .description(Text.of("Display's mkpasswd help"))
+									 .permission("sshd.mkpasswd.help")
+									 .executor((CommandSource source, CommandContext args) -> {
+										source.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
+										source.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
+										return CommandResult.success();
+									 })
+									 .build();
 
-				sender.sendMessage(Text.of("\u00A79Your Hash: " + hash + "\u00A7r"));
-			}
-			catch (Exception e)
-			{
-				// We're console, just print the stack trace.
-				e.printStackTrace();
-				sender.sendMessage(Text.of("\u00A7cAn error occured. Please check console for details.\u00A7r"));
-			}
-		}
+		// the root "mkpasswd" command
+		cmdspec = CommandSpec.builder()
+							 .description(Text.of("Create an SSHd password using hashes"))
+							 .extendedDescription(Text.of("Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN"))
+							 .permission("sshd.mkpasswd")
+							 .child(helpcmd, "help", "h")
+							 .child(plain, "plain")
+							 .child(sha256, "sha256")
+							 .child(bcrypt, "bcrypt")
+							 .child(pbkdf2, "pbkdf2")
+							 .executor(new MkpasswdCommand())
+							 .build();
 
-		return true;
+		// Register our command with Sponge.
+		Sponge.getCommandManager().register(SshdPlugin.GetInstance(), cmdspec, "mkpasswd");
 	}
 
 	// so sponge needed this, still figuring out the sponge API ~ Zach
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
 	{
-		return null;
+		// This command doesn't do anything.
+		src.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
+		src.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
+		return CommandResult.success();
 	}
 }

@@ -18,7 +18,12 @@ import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
-import org.bukkit.Bukkit;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.api.Platform;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.scheduler.SpongeExecutorService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.StreamHandler;
 
@@ -91,7 +97,7 @@ public class ConsoleShellFactory implements ShellFactory {
 			{
 				this.ConsoleReader = new ConsoleReader(in, new FlushyOutputStream(out), new SshTerminal());
 				this.ConsoleReader.setExpandEvents(true);
-				this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
+				//this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
 
 				StreamHandler streamHandler = new FlushyStreamHandler(out, new ConsoleLogFormatter(), this.ConsoleReader);
 				this.streamHandlerAppender		  = new StreamHandlerAppender(streamHandler);
@@ -118,7 +124,11 @@ public class ConsoleShellFactory implements ShellFactory {
 		{
 			try
 			{
-				if (!SshdPlugin.instance.getConfig().getString("Mode").equals("RPC"))
+				// Get the sponge command manager so we can execute commands.
+				CommandManager CmdManager = Sponge.getCommandManager();
+				SpongeExecutorService MinecraftExecutor = Sponge.getScheduler().createSyncExecutor(SshdPlugin.GetInstance());
+				// Print the SSHD motd.
+				if (!SshdPlugin.GetInstance().Mode.equals("RPC"))
 					printPreamble(this.ConsoleReader);
 				while (true)
 				{
@@ -143,14 +153,13 @@ public class ConsoleShellFactory implements ShellFactory {
 					// Hide the mkpasswd command input from other users.
 					Boolean mkpasswd = command.split(" ")[0].equals("mkpasswd");
 
-					Bukkit.getScheduler().runTask(
-						SshdPlugin.instance, () ->
+					MinecraftExecutor.schedule(() ->
 						{
-							if (SshdPlugin.instance.getConfig().getString("Mode").equals("RPC") && command.startsWith("rpc"))
+							if (SshdPlugin.GetInstance().Mode.equals("RPC") && command.startsWith("rpc"))
 							{
 								// NO ECHO NO PREAMBLE AND SHIT
 								String cmd = command.substring("rpc".length() + 1, command.length());
-								Bukkit.dispatchCommand(this.SshdCommandSender, cmd);
+								CmdManager.process(this.SshdCommandSender, cmd);
 							}
 							else
 							{
@@ -159,31 +168,31 @@ public class ConsoleShellFactory implements ShellFactory {
 								// our plugin and the connected client.
 								if (!mkpasswd)
 								{
-									SshdPlugin.instance.getLogger().info("<" + this.Username + "> " + command);
-									Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+									SshdPlugin.GetLogger().info("<" + this.Username + "> " + command);
+									CmdManager.process(Sponge.getServer().getConsole(), command);
 								}
 								else
 								{
-									Bukkit.dispatchCommand(this.SshdCommandSender, command);
+									CmdManager.process(this.SshdCommandSender, command);
 								}
 							}
-						});
+						}, 0, TimeUnit.SECONDS);
 				}
 			}
 			catch (IOException e)
 			{
-				SshdPlugin.instance.getLogger().log(Level.SEVERE, "Error processing command from SSH", e);
+				SshdPlugin.GetLogger().error("Error processing command from SSH", e);
 			}
 			finally
 			{
-				SshdPlugin.instance.getLogger().log(Level.INFO, this.Username + " disconnected from SSH.");
+				SshdPlugin.GetLogger().info(this.Username + " disconnected from SSH.");
 				callback.onExit(0);
 			}
 		}
 
 		private void printPreamble(ConsoleReader cr) throws IOException
 		{
-			File f = new File(SshdPlugin.instance.getDataFolder(), "motd.txt");
+			File f = new File(SshdPlugin.GetInstance().ConfigDir.toFile(), "motd.txt");
 			try 
 			{
 				BufferedReader br = new BufferedReader(new FileReader(f));
@@ -194,14 +203,24 @@ public class ConsoleShellFactory implements ShellFactory {
 			}
 			catch (FileNotFoundException e)
 			{
-				SshdPlugin.instance.getLogger().log(Level.WARNING, "Could not open " + f + ": File does not exist.");
+				SshdPlugin.GetLogger().warn("Could not open " + f + ": File does not exist.");
 				// Not showing the SSH motd is not a fatal failure, let the session continue. 
 			}
 
 			// Doesn't really guarantee our actual system hostname but
 			// it's better than not having one at all.
-			cr.println("Connected to: " + InetAddress.getLocalHost().getHostName() + " (" + Bukkit.getServer().getName() + ")\r");
-			cr.println(ConsoleLogFormatter.ColorizeString(Bukkit.getServer().getMotd()).replaceAll("\n", "\r\n"));
+			Platform p = Sponge.getPlatform();
+			MinecraftVersion mv = p.getMinecraftVersion();
+			PluginContainer pc = p.getContainer(Platform.Component.API);
+			String str = String.format(
+				"Connected to: %s -- Minecraft %s (%s %s)",
+				InetAddress.getLocalHost().getHostName(),
+				mv.getName(),
+				pc.getName(),
+				pc.getVersion().orElse("<Unknown>"));
+
+			cr.println(str + "\r");
+			cr.println(ConsoleLogFormatter.ColorizeString(Sponge.getServer().getMotd().toPlain()).replaceAll("\n", "\r\n"));
 			cr.println("\r");
 			cr.println("Type 'exit' to exit the shell." + "\r");
 			cr.println("===============================================" + "\r");

@@ -5,7 +5,7 @@ import org.apache.sshd.server.command.CommandFactory;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
-import org.bukkit.Bukkit;
+import org.spongepowered.api.Sponge;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,14 +51,21 @@ public class ConsoleCommandFactory implements CommandFactory {
         }
 
         @Override
-        public void start(ChannelSession cs, Environment environment) throws IOException {
-            try {
-                SshdPlugin.instance.getLogger()
+        public void start(ChannelSession cs, Environment environment) throws IOException 
+        {
+            try 
+            {
+                SshdPlugin.GetLogger()
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-            } catch (Exception e) {
-                SshdPlugin.instance.getLogger().severe("Error processing command from SSH -" + e.getMessage());
-            } finally {
+
+                Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
+            } 
+            catch (Exception e)
+            {
+                SshdPlugin.GetLogger().error("Error processing command from SSH -" + e.getMessage());
+            }
+            finally
+            {
                 callback.onExit(0);
             }
         }

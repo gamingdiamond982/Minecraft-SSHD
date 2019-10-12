@@ -26,7 +26,7 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 	{
 		byte[] keyBytes = key.getEncoded();
 		File keyFile 	= new File(authorizedKeysDir, username);
-		Integer tries   = SshdPlugin.instance.LoginRetries;
+		Integer tries   = SshdPlugin.GetInstance().LoginRetries;
 
 		if (keyFile.exists())
 		{
@@ -46,7 +46,7 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 				}
                 else
                 {
-					SshdPlugin.instance.getLogger().info(
+					SshdPlugin.GetLogger().info(
 						username + " failed authentication via SSH session using key file " + keyFile.getAbsolutePath());
 				}
 
@@ -59,7 +59,7 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 				if (this.FailCounts.get(username) >= tries)
 				{
 					this.FailCounts.put(username, 0);
-					SshdPlugin.instance.getLogger().info("Too many failures for " + username + ", disconnecting.");
+					SshdPlugin.GetLogger().info("Too many failures for " + username + ", disconnecting.");
 					session.close(true);
 				}
 
@@ -67,12 +67,12 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 			}
 			catch (Exception e)
 			{
-				SshdPlugin.instance.getLogger().error("Failed to process public key " + keyFile.getAbsolutePath() + " " + e.getMessage());
+				SshdPlugin.GetLogger().error("Failed to process public key " + keyFile.getAbsolutePath() + " " + e.getMessage());
 			}
 		}
 		else
 		{
-			SshdPlugin.instance.getLogger().error("Could not locate public key for " + username
+			SshdPlugin.GetLogger().error("Could not locate public key for " + username
 													+ ". Make sure the user's key is named the same as their user name "
 													+ "without a file extension.");
 		}
