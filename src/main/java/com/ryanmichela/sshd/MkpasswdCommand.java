@@ -1,14 +1,23 @@
 package com.ryanmichela.sshd;
 
+/*
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
-
+*/
 import java.util.Arrays;
 
 import com.ryanmichela.sshd.Cryptography;
 import com.ryanmichela.sshd.SshdPlugin;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.command.TabCompleteEvent;
+import org.spongepowered.api.text.Text;
 
 class MkpasswdCommand implements CommandExecutor
 {
@@ -19,16 +28,16 @@ class MkpasswdCommand implements CommandExecutor
 	// or hash leakages from the user to other connected users. Plus this syntax will show how
 	// to both use the command and what hashes we support which is important for people who don't
 	// know how to RTFM. - Justin
-	private void SendSyntax(CommandSender sender, boolean invalid)
+	private void SendSyntax(CommandSource sender, boolean invalid)
 	{
 		if (invalid)
-			sender.sendMessage("\u00A7cInvalid Syntax\u00A7r");
-		sender.sendMessage("\u00A7a/mkpasswd <help|hash> <password>\u00A7r");
-		sender.sendMessage("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r");
+		// So, to send a message in sponge, you must use "Text.of()" for some reason.
+		sender.sendMessage(Text.of("\u00A7cInvalid Syntax\u00A7r"));
+		sender.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
+		sender.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
 	}
 
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
+	public boolean onCommand(CommandSource sender, TabCompleteEvent.Command command, String label, String[] args)
 	{
 		// If we're not mkpasswd, just fuck off.
 		if (!label.equalsIgnoreCase("mkpasswd"))
@@ -51,7 +60,7 @@ class MkpasswdCommand implements CommandExecutor
 			return true;
 		}
 
-		boolean hasperm = (sender instanceof Player) ? ((Player)sender).hasPermission("sshd.mkpasswd") : true;
+		boolean hasperm = (!(sender instanceof Player)) || ((Player) sender).hasPermission("sshd.mkpasswd");
 
 		if (hasperm)
 		{ 
@@ -62,7 +71,7 @@ class MkpasswdCommand implements CommandExecutor
 				if (algoritm.equalsIgnoreCase("PLAIN"))
 				{
 					// I mean c'mon...
-					sender.sendMessage("Bro really? it's literally your unencrypted password...");
+					sender.sendMessage(Text.of("Bro really? it's literally your unencrypted password..."));
 					return true;
 				}
 				else if (algoritm.equalsIgnoreCase("pbkdf2"))
@@ -77,16 +86,23 @@ class MkpasswdCommand implements CommandExecutor
 					return true;
 				}
 
-				sender.sendMessage("\u00A79Your Hash: " + hash + "\u00A7r");
+				sender.sendMessage(Text.of("\u00A79Your Hash: " + hash + "\u00A7r"));
 			}
 			catch (Exception e)
 			{
 				// We're console, just print the stack trace.
 				e.printStackTrace();
-				sender.sendMessage("\u00A7cAn error occured. Please check console for details.\u00A7r");
+				sender.sendMessage(Text.of("\u00A7cAn error occured. Please check console for details.\u00A7r"));
 			}
 		}
 
 		return true;
+	}
+
+	// so sponge needed this, still figuring out the sponge API ~ Zach
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
+	{
+		return null;
 	}
 }

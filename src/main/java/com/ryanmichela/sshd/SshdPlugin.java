@@ -1,10 +1,16 @@
 package com.ryanmichela.sshd;
 
+import com.ryanmichela.sshd.utils.Config;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ryanmichela.sshd.ConsoleShellFactory;
 import com.ryanmichela.sshd.MkpasswdCommand;
@@ -17,53 +23,62 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.logging.Level;
 
-/**
- * Copyright 2013 Ryan Michela
- */
-public
-class SshdPlugin extends JavaPlugin
+import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.spongepowered.api.text.Text;
+
+@Plugin(id = "spongesshd", name = "Sponge-SSHD", version = "1.3.7", description = "Sponge port for Minecraft-SSHD. SSH for your minecraft server!")
+public class SshdPlugin
 {
+    String ListenAddress = "";
+    Integer Port = 1025;
+    String Mode = "";
+    Boolean EnableSFTP = true;
+    Integer LoginRetries = 3;
+    String PasswordType = "";
+    // Credentials
 
-  private SshServer sshd;
-  public static SshdPlugin instance;
+    private File modConfigFolder;
+    CommandSpec MkpasswdCommand = CommandSpec.builder()
+            .description(Text.of("Make a SSHD password hash"))
+            .permission("sshd.mkpasswd")
+            .build();
 
-	@Override public void onLoad()
+    public File getDataFolder()
+    {
+        return modConfigFolder;
+    }
+
+    private SshServer sshd;
+	public static SshdPlugin instance;
+
+	@Inject
+	public Logger logger;
+
+	public Config config;
+	@Listener
+	public void onServerStart(GameStartedServerEvent event)
 	{
-		saveDefaultConfig();
-		File authorizedKeys = new File(getDataFolder(), "authorized_keys");
-		if (!authorizedKeys.exists())
-			authorizedKeys.mkdirs();
+        instance = this;
+        // Parse our config
+        config = new Config();
+        config.setup();
 
-		try
-		{
-			File motd = new File(getDataFolder(), "motd.txt");
-			if (!motd.exists())
-			{
-				InputStream link = (getClass().getResourceAsStream("/motd.txt"));
-				Files.copy(link, motd.getAbsoluteFile().toPath());
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+        // Now include it in our dealio here
+        this.Mode = config.configNode.getNode("Mode").getString();
+        this.PasswordType = config.configNode.getNode("PasswordType").getString();
+        this.ListenAddress = config.configNode.getNode("ListenAddress").getString();
+        this.Port = config.configNode.getNode("Port").getInt();
+        this.LoginRetries = config.configNode.getNode("LoginRetries").getInt();
+        this.EnableSFTP = config.configNode.getNode("EnableSFTP").getBoolean();
 
-		// Don't go any lower than INFO or SSHD will cause a stack overflow exception.
-		// SSHD will log that it wrote bites to the output stream, which writes
-		// bytes to the output stream - ad nauseaum.
-		getLogger().setLevel(Level.INFO);
-	}
-
-	@Override public void onEnable()
-	{
-		instance = this;
 
 		sshd = SshServer.setUpDefaultServer();
-		sshd.setPort(getConfig().getInt("Port", 1025));
-		String host = getConfig().getString("ListenAddress", "all");
+		sshd.setPort(this.Port);
+		String host = this.ListenAddress;
 		sshd.setHost(host.equals("all") ? null : host);
 
-		File hostKey		= new File(getDataFolder(), "hostkey");
+		File hostKey = new File(getDataFolder(), "hostkey");
 		File authorizedKeys = new File(getDataFolder(), "authorized_keys");
 
 		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(hostKey.toPath()));
@@ -71,14 +86,17 @@ class SshdPlugin extends JavaPlugin
 		sshd.setPasswordAuthenticator(new ConfigPasswordAuthenticator());
 		sshd.setPublickeyAuthenticator(new PublicKeyAuthenticator(authorizedKeys));
 
-		if (getConfig().getBoolean("EnableSFTP"))
+
+
+		if (this.EnableSFTP)
 		{
 			sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
 			sshd.setFileSystemFactory(
-				new VirtualFileSystemFactory(FileSystems.getDefault().getPath(getDataFolder().getAbsolutePath()).getParent().getParent()));
+			        new VirtualFileSystemFactory(FileSystems.getDefault().getPath(getDataFolder().getAbsolutePath()).getParent().getParent()));
 		}
 
-		this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
+        Sponge.getCommandManager().register(instance, MkpasswdCommand, "mkpasswd");
+		//this.getCommand("mkpasswd").setExecutor(new MkpasswdCommand());
 
 		sshd.setCommandFactory(new ConsoleCommandFactory());
 		try
@@ -87,19 +105,14 @@ class SshdPlugin extends JavaPlugin
 		}
 		catch (IOException e)
 		{
-			getLogger().log(Level.SEVERE, "Failed to start SSH server! ", e);
+			getLogger().error("Failed to start SSH server! ", e);
 		}
+
+		logger.info("Successfully running ExamplePlugin!!!");
 	}
 
-	@Override public void onDisable()
+	public Logger getLogger()
 	{
-		try
-		{
-			sshd.stop();
-		}
-		catch (Exception e)
-		{
-			// do nothing
-		}
+		return logger;
 	}
 }

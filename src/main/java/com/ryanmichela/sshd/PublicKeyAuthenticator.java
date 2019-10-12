@@ -1,6 +1,5 @@
 package com.ryanmichela.sshd;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.sshd.common.config.keys.AuthorizedKeyEntry;
 import org.apache.sshd.common.config.keys.PublicKeyEntryResolver;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
@@ -27,7 +26,7 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 	{
 		byte[] keyBytes = key.getEncoded();
 		File keyFile 	= new File(authorizedKeysDir, username);
-		Integer tries   = SshdPlugin.instance.getConfig().getInt("LoginRetries");
+		Integer tries   = SshdPlugin.instance.LoginRetries;
 
 		if (keyFile.exists())
 		{
@@ -68,12 +67,12 @@ public class PublicKeyAuthenticator implements PublickeyAuthenticator
 			}
 			catch (Exception e)
 			{
-				SshdPlugin.instance.getLogger().severe("Failed to process public key " + keyFile.getAbsolutePath() + " " + e.getMessage());
+				SshdPlugin.instance.getLogger().error("Failed to process public key " + keyFile.getAbsolutePath() + " " + e.getMessage());
 			}
 		}
 		else
 		{
-			SshdPlugin.instance.getLogger().warning("Could not locate public key for " + username
+			SshdPlugin.instance.getLogger().error("Could not locate public key for " + username
 													+ ". Make sure the user's key is named the same as their user name "
 													+ "without a file extension.");
 		}

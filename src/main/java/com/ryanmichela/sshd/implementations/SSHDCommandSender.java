@@ -1,29 +1,17 @@
 package com.ryanmichela.sshd.implementations;
 
 import com.ryanmichela.sshd.SshdPlugin;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
-import org.bukkit.permissions.PermissibleBase;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
-
 import com.ryanmichela.sshd.ConsoleShellFactory;
 import com.ryanmichela.sshd.ConsoleLogFormatter;
+import org.spongepowered.api.command.CommandSource;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class SSHDCommandSender implements ConsoleCommandSender, CommandSender
+// This is gonna be a mess.
+public class SSHDCommandSender implements ConsoleCommandSender, CommandSource
 {
 	private final PermissibleBase perm = new PermissibleBase(this);
 	private final SSHDConversationTracker conversationTracker = new SSHDConversationTracker();
