@@ -3,7 +3,6 @@ package com.ryanmichela.sshd;
 import com.ryanmichela.sshd.ConsoleCommandCompleter;
 import com.ryanmichela.sshd.ConsoleLogFormatter;
 import com.ryanmichela.sshd.FlushyOutputStream;
-import com.ryanmichela.sshd.FlushyStreamHandler;
 import com.ryanmichela.sshd.SshTerminal;
 import com.ryanmichela.sshd.SshdPlugin;
 import com.ryanmichela.sshd.StreamHandlerAppender;
@@ -34,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.StreamHandler;
 
@@ -97,10 +95,9 @@ public class ConsoleShellFactory implements ShellFactory {
 			{
 				this.ConsoleReader = new ConsoleReader(in, new FlushyOutputStream(out), new SshTerminal());
 				this.ConsoleReader.setExpandEvents(true);
-				//this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
+				this.ConsoleReader.addCompleter(new ConsoleCommandCompleter());
 
-				StreamHandler streamHandler = new FlushyStreamHandler(out, new ConsoleLogFormatter(), this.ConsoleReader);
-				this.streamHandlerAppender		  = new StreamHandlerAppender(streamHandler);
+				this.streamHandlerAppender = new StreamHandlerAppender(this.ConsoleReader);
 
 				((Logger)LogManager.getRootLogger()).addAppender(this.streamHandlerAppender);
 
@@ -132,7 +129,7 @@ public class ConsoleShellFactory implements ShellFactory {
 					printPreamble(this.ConsoleReader);
 				while (true)
 				{
-					String command = this.ConsoleReader.readLine("\r>", null);
+					String command = this.ConsoleReader.readLine("\r> ", null);
 					// The user sent CTRL+D to close the shell, terminate the session.
 					if (command == null)
 						break;
@@ -153,7 +150,7 @@ public class ConsoleShellFactory implements ShellFactory {
 					// Hide the mkpasswd command input from other users.
 					Boolean mkpasswd = command.split(" ")[0].equals("mkpasswd");
 
-					MinecraftExecutor.schedule(() ->
+					MinecraftExecutor.submit(() ->
 						{
 							if (SshdPlugin.GetInstance().Mode.equals("RPC") && command.startsWith("rpc"))
 							{
@@ -168,7 +165,7 @@ public class ConsoleShellFactory implements ShellFactory {
 								// our plugin and the connected client.
 								if (!mkpasswd)
 								{
-									SshdPlugin.GetLogger().info("<" + this.Username + "> " + command);
+									SshdPlugin.GetInstance().logger.info("<" + this.Username + "> " + command);
 									CmdManager.process(Sponge.getServer().getConsole(), command);
 								}
 								else
@@ -176,16 +173,16 @@ public class ConsoleShellFactory implements ShellFactory {
 									CmdManager.process(this.SshdCommandSender, command);
 								}
 							}
-						}, 0, TimeUnit.SECONDS);
-				}
+						});
+                }
 			}
 			catch (IOException e)
 			{
-				SshdPlugin.GetLogger().error("Error processing command from SSH", e);
+				SshdPlugin.GetInstance().logger.error("Error processing command from SSH", e);
 			}
 			finally
 			{
-				SshdPlugin.GetLogger().info(this.Username + " disconnected from SSH.");
+				SshdPlugin.GetInstance().logger.info(this.Username + " disconnected from SSH.");
 				callback.onExit(0);
 			}
 		}
@@ -203,7 +200,7 @@ public class ConsoleShellFactory implements ShellFactory {
 			}
 			catch (FileNotFoundException e)
 			{
-				SshdPlugin.GetLogger().warn("Could not open " + f + ": File does not exist.");
+				SshdPlugin.GetInstance().logger.warn("Could not open " + f + ": File does not exist.");
 				// Not showing the SSH motd is not a fatal failure, let the session continue. 
 			}
 
@@ -222,7 +219,7 @@ public class ConsoleShellFactory implements ShellFactory {
 			cr.println(str + "\r");
 			cr.println(ConsoleLogFormatter.ColorizeString(Sponge.getServer().getMotd().toPlain()).replaceAll("\n", "\r\n"));
 			cr.println("\r");
-			cr.println("Type 'exit' to exit the shell." + "\r");
+			cr.println("Type 'exit' or CTRL+D to exit the shell." + "\r");
 			cr.println("===============================================" + "\r");
 		}
 	}

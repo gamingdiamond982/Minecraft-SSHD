@@ -51,7 +51,7 @@ public class SshdPlugin
 	private static SshdPlugin instance;
 
 	@Inject
-	public static Logger logger;
+	public Logger logger;
 
 	@Inject
     @DefaultConfig(sharedRoot = false)
@@ -70,6 +70,11 @@ public class SshdPlugin
         // Parse our config
         config = new Config();
 		config.setup();
+
+		// Make sure our authorized_keys folder exists
+		File authorizedKeys = new File(this.ConfigDir.toFile(), "authorized_keys");
+		if (!authorizedKeys.exists())
+			authorizedKeys.mkdirs();
 
         // Now include it in our dealio here
         this.Mode = config.configNode.getNode("Mode").getString();
@@ -99,7 +104,6 @@ public class SshdPlugin
 		sshd.setHost(this.ListenAddress.equals("all") ? null : this.ListenAddress);
 
 		File hostKey = new File(this.ConfigDir.toFile(), "hostkey");
-		File authorizedKeys = new File(this.ConfigDir.toFile(), "authorized_keys");
 
 		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(hostKey.toPath()));
 		sshd.setShellFactory(new ConsoleShellFactory());
@@ -109,8 +113,7 @@ public class SshdPlugin
 		if (this.EnableSFTP)
 		{
 			sshd.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
-			sshd.setFileSystemFactory(
-			        new VirtualFileSystemFactory(this.ConfigDir.getParent().getParent()));
+			sshd.setFileSystemFactory(new VirtualFileSystemFactory(this.ConfigDir.getParent().getParent()));
 		}
 
 		MkpasswdCommand.BuildCommand();
@@ -133,8 +136,8 @@ public class SshdPlugin
 		return instance;
 	}
 
-	public static Logger GetLogger()
+	public Logger GetLogger()
 	{
-		return logger;
+		return this.logger;
 	}
 }

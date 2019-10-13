@@ -35,7 +35,7 @@ public class MkpasswdCommand implements CommandExecutor
 										.executor((CommandSource source, CommandContext args) -> {
 											try
 											{
-												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.PBKDF2_HashPassword(args.<String>getOne("message").get())));
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.PBKDF2_HashPassword(args.<String>getOne("password").get())));
 											}
 											catch (Exception e)
 											{
@@ -53,7 +53,7 @@ public class MkpasswdCommand implements CommandExecutor
 										.executor((CommandSource source, CommandContext args) -> {
 											try
 											{
-												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.BCrypt_HashPassword(args.<String>getOne("message").get())));
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.BCrypt_HashPassword(args.<String>getOne("password").get())));
 											}
 											catch (Exception e)
 											{
@@ -71,7 +71,7 @@ public class MkpasswdCommand implements CommandExecutor
 										.executor((CommandSource source, CommandContext args) -> {
 											try
 											{
-												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.SHA256_HashPassword(args.<String>getOne("message").get())));
+												source.sendMessage(Text.of("\u00A79Your Hash: " + Cryptography.SHA256_HashPassword(args.<String>getOne("password").get())));
 											}
 											catch (Exception e)
 											{
@@ -82,33 +82,22 @@ public class MkpasswdCommand implements CommandExecutor
 										})
 										.build();
 
-		// The plain text encryption method
+		// The plain text "encryption" method
 		CommandSpec plain = CommandSpec.builder()
 										.description(Text.of("Plain text password (insecure)"))
 										.permission("sshd.mkpasswd.plain")
+										.arguments(GenericArguments.remainingJoinedStrings(Text.of("password")))
 										.executor((CommandSource source, CommandContext args) -> {
 											source.sendMessage(Text.of("Bro... It's literally your unhashed password."));
 											return CommandResult.success();
 										})
 										.build();
 
-		// The "help" command to show syntax usage
-		CommandSpec helpcmd = CommandSpec.builder()
-									 .description(Text.of("Display's mkpasswd help"))
-									 .permission("sshd.mkpasswd.help")
-									 .executor((CommandSource source, CommandContext args) -> {
-										source.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
-										source.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
-										return CommandResult.success();
-									 })
-									 .build();
-
 		// the root "mkpasswd" command
 		cmdspec = CommandSpec.builder()
 							 .description(Text.of("Create an SSHd password using hashes"))
 							 .extendedDescription(Text.of("Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN"))
 							 .permission("sshd.mkpasswd")
-							 .child(helpcmd, "help", "h")
 							 .child(plain, "plain")
 							 .child(sha256, "sha256")
 							 .child(bcrypt, "bcrypt")
@@ -125,7 +114,7 @@ public class MkpasswdCommand implements CommandExecutor
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
 	{
 		// This command doesn't do anything.
-		src.sendMessage(Text.of("\u00A7a/mkpasswd <help|hash> <password>\u00A7r"));
+		src.sendMessage(Text.of("\u00A7a/mkpasswd <hash> <password...>\u00A7r"));
 		src.sendMessage(Text.of("\u00A79Supported Hashes: SHA256, PBKDF2, BCRYPT, PLAIN\u00A7r"));
 		return CommandResult.success();
 	}

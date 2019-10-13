@@ -55,14 +55,14 @@ public class ConsoleCommandFactory implements CommandFactory {
         {
             try 
             {
-                SshdPlugin.GetLogger()
+                SshdPlugin.GetInstance().logger
                         .info("[U: " + environment.getEnv().get(Environment.ENV_USER) + "] " + command);
 
                 Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
             } 
             catch (Exception e)
             {
-                SshdPlugin.GetLogger().error("Error processing command from SSH -" + e.getMessage());
+                SshdPlugin.GetInstance().logger.error("Error processing command from SSH -" + e.getMessage());
             }
             finally
             {

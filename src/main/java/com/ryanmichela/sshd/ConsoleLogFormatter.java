@@ -9,20 +9,12 @@ import org.fusesource.jansi.Ansi;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.logging.Formatter;
-import java.util.logging.LogRecord;
 
-public class ConsoleLogFormatter extends Formatter {
-
-    private SimpleDateFormat dateFormat;
-    private static final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
-
-    public ConsoleLogFormatter() {
-        this.dateFormat = new SimpleDateFormat("HH:mm:ss");
-    }
+public class ConsoleLogFormatter
+{
+	private static final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
 
     public static String ColorizeString(String str)
     {
@@ -66,43 +58,5 @@ public class ConsoleLogFormatter extends Formatter {
         result += Ansi.ansi().reset().toString();
         return result;
 	}
-
-  	public String format(LogRecord logrecord)
-	{
-		try
-		{
-			Class.forName("org.bukkit.craftbukkit.command.ColouredConsoleSender");
-		}
-		catch (ClassNotFoundException ignored)
-		{
-			// MEANS WE'RE ON PAPER/TACO/OTHER SHIT
-			colorize(logrecord);
-		}
-		StringBuilder stringbuilder = new StringBuilder();
-
-		stringbuilder.append(" [");
-		stringbuilder.append(this.dateFormat.format(logrecord.getMillis())).append(" ");
-
-		stringbuilder.append(logrecord.getLevel().getName()).append("]: ");
-		stringbuilder.append(this.formatMessage(logrecord));
-		stringbuilder.append('\n');
-		Throwable throwable = logrecord.getThrown();
-
-		if (throwable != null)
-		{
-			StringWriter stringwriter = new StringWriter();
-
-			throwable.printStackTrace(new PrintWriter(stringwriter));
-			stringbuilder.append(stringwriter.toString());
-		}
-
-		return stringbuilder.toString().replace("\n", "\r\n");
-	}
-
-	private void colorize(LogRecord logrecord) 
-    {
-		String result = ColorizeString(logrecord.getMessage());
-		logrecord.setMessage(result);
-    }
 }
 

@@ -23,7 +23,7 @@ public class ConfigPasswordAuthenticator implements PasswordAuthenticator {
 		String ConfigHash = SshdPlugin.GetInstance().config.configNode.getNode("Credentials", username.trim(), "password").getString();
 
 		if (ConfigHash == null)
-			SshdPlugin.GetLogger().warn("Config has no such user: " + username);
+			SshdPlugin.GetInstance().logger.warn("Config has no such user: " + username);
 		else
 		{
 			try
@@ -69,7 +69,7 @@ public class ConfigPasswordAuthenticator implements PasswordAuthenticator {
 			}
 		}
 
-		SshdPlugin.GetLogger().info("Failed login for " + username + " using " + HashType + "-based password authentication.");
+		SshdPlugin.GetInstance().logger.info("Failed login for " + username + " using " + HashType + "-based password authentication.");
 		Integer tries = SshdPlugin.GetInstance().LoginRetries;
 
 		try
@@ -83,7 +83,7 @@ public class ConfigPasswordAuthenticator implements PasswordAuthenticator {
 			if (this.FailCounts.get(username) >= tries)
 			{
 				this.FailCounts.put(username, 0);
-				SshdPlugin.GetLogger().info("Too many failures for " + username + ", disconnecting.");
+				SshdPlugin.GetInstance().logger.info("Too many failures for " + username + ", disconnecting.");
 				ss.close(true);
 			}
 		}

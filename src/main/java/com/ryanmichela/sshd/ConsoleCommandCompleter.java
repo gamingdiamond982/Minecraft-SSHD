@@ -6,13 +6,23 @@ package com.ryanmichela.sshd;
 
 import jline.console.completer.Completer;
 
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.scheduler.SpongeExecutorService;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
-public class ConsoleCommandCompleter //implements Completer 
+public class ConsoleCommandCompleter implements Completer 
 {
-/*
+    private SpongeExecutorService MinecraftExecutor;
+
+    public ConsoleCommandCompleter()
+    {
+        super();
+        this.MinecraftExecutor = Sponge.getScheduler().createSyncExecutor(SshdPlugin.GetInstance());
+    }
+
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) 
     {
         Waitable<List<String>> waitable = new Waitable<List<String>>() 
@@ -20,12 +30,11 @@ public class ConsoleCommandCompleter //implements Completer
             @Override
             protected List<String> evaluate() 
             {
-                CommandMap commandMap = ReflectionUtil.getProtectedValue(Bukkit.getServer(), "commandMap");
-                return commandMap.tabComplete(Bukkit.getServer().getConsoleSender(), buffer);
+                return Sponge.getCommandManager().getSuggestions(Sponge.getServer().getConsole(), buffer, null);
             }
         };
 
-        Bukkit.getScheduler().runTask(SshdPlugin.instance, waitable);
+        this.MinecraftExecutor.execute(waitable);
         try 
         {
             List<String> offers = waitable.get();
@@ -47,7 +56,7 @@ public class ConsoleCommandCompleter //implements Completer
         } 
         catch (ExecutionException e) 
         {
-            SshdPlugin.instance.getLogger().log(Level.WARNING, "Unhandled exception when tab completing", e);
+            SshdPlugin.GetInstance().logger.warn("Unhandled exception when tab completing", e);
         } 
         catch (InterruptedException e) 
         {
@@ -55,6 +64,5 @@ public class ConsoleCommandCompleter //implements Completer
         }
         return cursor;
     }
-    */
 }
 
