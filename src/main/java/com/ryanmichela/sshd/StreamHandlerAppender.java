@@ -34,8 +34,6 @@ public class StreamHandlerAppender implements Appender
     @Override
     public void append(LogEvent logEvent) 
     {
-        if(true) return;
-        
         if (logEvent.getLevel() == Level.DEBUG || logEvent.getLevel() == Level.TRACE)
             return;
         
