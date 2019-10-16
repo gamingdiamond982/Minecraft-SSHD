@@ -88,7 +88,7 @@ public class MkpasswdCommand implements CommandExecutor
 										.permission("sshd.mkpasswd.plain")
 										.arguments(GenericArguments.remainingJoinedStrings(Text.of("password")))
 										.executor((CommandSource source, CommandContext args) -> {
-											source.sendMessage(Text.of("Bro... It's literally your unhashed password."));
+											source.sendMessage(Text.of("\u00A79Your Hash: \u00A7cIt's literally your unhashed password."));
 											return CommandResult.success();
 										})
 										.build();
