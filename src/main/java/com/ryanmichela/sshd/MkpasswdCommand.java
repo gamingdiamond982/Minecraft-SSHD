@@ -58,7 +58,7 @@ public class MkpasswdCommand extends Command
 				if (algoritm.equalsIgnoreCase("PLAIN"))
 				{
 					// I mean c'mon...
-					sender.sendMessage("Bro really? it's literally your unencrypted password...");
+					sender.sendMessage("\u00A79Your Hash: \u00A7cIt's literally your unhashed password.");
 					return;
 				}
 				else if (algoritm.equalsIgnoreCase("pbkdf2"))
