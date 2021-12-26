@@ -21,6 +21,7 @@ import com.ryanmichela.sshd.ConsoleLogFormatter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class SSHDCommandSender implements ConsoleCommandSender, CommandSender
@@ -61,9 +62,24 @@ public class SSHDCommandSender implements ConsoleCommandSender, CommandSender
 		}
 	}
 
+	@Override
+	public void sendRawMessage(UUID uuid, String s) {
+
+	}
+
 	public void sendMessage(String[] messages) 
 	{
 		Arrays.asList(messages).forEach(this::sendMessage);
+	}
+
+	@Override
+	public void sendMessage(UUID uuid, String s) {
+
+	}
+
+	@Override
+	public void sendMessage(UUID uuid, String... strings) {
+
 	}
 
 	public String getName() 

@@ -1,4 +1,5 @@
 name: SSHD
+api-version: 1.13
 version: ${project.version}
 author: Ryan Michela, Haarolean, toxuin, Justin Crawford, Zachery Coleman
 main: com.ryanmichela.sshd.SshdPlugin

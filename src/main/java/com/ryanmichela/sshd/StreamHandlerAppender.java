@@ -87,6 +87,14 @@ public class StreamHandlerAppender implements Appender
     }
 
     @Override
+    public State getState() {
+        return null;
+    }
+
+    @Override
+    public void initialize() {}
+
+    @Override
     public boolean isStarted() 
     {
         return true;

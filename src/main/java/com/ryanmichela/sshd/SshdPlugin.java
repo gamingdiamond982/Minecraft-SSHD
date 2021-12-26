@@ -2,11 +2,11 @@ package com.ryanmichela.sshd;
 
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.common.session.helpers.AbstractSession;
+import org.apache.sshd.contrib.server.subsystem.sftp.SimpleAccessControlSftpEventListener;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
-import org.apache.sshd.server.subsystem.sftp.SimpleAccessControlSftpEventListener;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -96,7 +96,7 @@ public class SshdPlugin extends JavaPlugin
 		{
 			// Handle access control for SFTP.
 			SftpSubsystemFactory.Builder builder = new SftpSubsystemFactory.Builder();
-			builder.addSftpEventListener(new SimpleAccessControlSftpEventListener() 
+			builder.addSftpEventListener(new SimpleAccessControlSftpEventListener()
 			{
 				protected boolean isAccessAllowed(ServerSession session, String remote, Path localpath)
 				{
