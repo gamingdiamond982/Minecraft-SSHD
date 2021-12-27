@@ -1,6 +1,6 @@
 package com.ryanmichela.sshd.implementations;
 
-import com.ryanmichela.sshd.*;
+import com.ryanmichela.sshd.SshdPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
@@ -15,6 +15,9 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
+import com.ryanmichela.sshd.ConsoleShellFactory;
+import com.ryanmichela.sshd.ConsoleLogFormatter;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
@@ -26,7 +29,7 @@ public class SSHDCommandSender implements ConsoleCommandSender, CommandSender
 	private final PermissibleBase perm = new PermissibleBase(this);
 	private final SSHDConversationTracker conversationTracker = new SSHDConversationTracker();
 	// Set by the upstream allocating function
-	public ConsoleCommand console;
+	public ConsoleShellFactory.ConsoleShell console;
 
 	public void sendMessage(String message) 
 	{
@@ -36,7 +39,27 @@ public class SSHDCommandSender implements ConsoleCommandSender, CommandSender
 	public void sendRawMessage(String message) 
 	{
 		// What the fuck does this code even do? Are we sending to one client or all of them?
-		this.console.sendMessage(ConsoleLogFormatter.ColorizeString(message).replace("\n", "\n\r"));
+		if (this.console.ConsoleReader == null)
+			return;
+		try 
+		{
+			this.console.ConsoleReader.println(ConsoleLogFormatter.ColorizeString(message).replace("\n", "\n\r"));
+			this.console.ConsoleReader.print(this.console.ConsoleReader.RESET_LINE + "");
+            this.console.ConsoleReader.flush();
+            try 
+            {
+                this.console.ConsoleReader.drawLine();
+            }
+             catch (Throwable ex) 
+            {
+                this.console.ConsoleReader.getCursorBuffer().clear();
+            }
+            this.console.ConsoleReader.flush();
+		} 
+		catch (IOException e) 
+		{
+			SshdPlugin.instance.getLogger().log(Level.SEVERE, "Error sending message to SSHDCommandSender", e);
+		}
 	}
 
 	@Override
