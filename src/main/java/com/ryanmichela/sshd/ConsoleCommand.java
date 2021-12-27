@@ -135,7 +135,7 @@ public class ConsoleCommand implements Command, Runnable
 
     public void sendMessage(String message) {
         try {
-            out.write(message.getBytes(StandardCharsets.UTF_8));
+            out.write(message.replace('\r', '\n').getBytes(StandardCharsets.UTF_8));
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
